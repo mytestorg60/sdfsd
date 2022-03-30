@@ -1,0 +1,43 @@
+---
+distFolder: ./
+setup:
+  - name: Setup composer
+    action: php-actions/composer@v6
+    properties:
+      args: --optimize-autoloader
+  - name: Setup Node.js v14.x
+    action: actions/setup-node@v1
+    properties:
+      node-version: 14.x
+  - name: Make envfile
+    action: fmunirdev/envvar-to-dotenv-action@v0.2.0
+    environment:
+      APP_NAME: Laravel
+      APP_ENV: local
+      APP_DEBUG: true
+      APP_URL: ${{ steps.project.outputs.site-url }}
+      LOG_CHANNEL: stack
+      LOG_LEVEL: debug
+      DB_CONNECTION: sqlite
+      DATABASE_URL: "/storage/database.sqlite"
+      BROADCAST_DRIVER: log
+      CACHE_DRIVER: file
+      FILESYSTEM_DRIVER: local
+      QUEUE_CONNECTION: sync
+      SESSION_DRIVER: file
+      SESSION_LIFETIME: 120
+    properties:
+      variableNames: APP_NAME,APP_ENV,APP_KEY,APP_DEBUG,APP_URL,LOG_CHANNEL,LOG_LEVEL,DB_CONNECTION,DATABASE_URL,BROADCAST_DRIVER,CACHE_DRIVER,FILESYSTEM_DRIVER,QUEUE_CONNECTION,SESSION_DRIVER,SESSION_LIFETIME
+      target: .env
+prepare:
+  name: Prepare project environment
+  # here you can decide to run npm ci or npm install or remove the "prepare"
+  # part if you don't create assets with node/Laravel Mix
+  command: npm ci
+build:
+  name: Build assets and run tests
+  # commands that are executed one after the other at the build servers NOT at real webspace
+  command:
+    npm run prod;
+    php artisan key:generate --force -n;
+    php artisan test;
